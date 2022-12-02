@@ -4,8 +4,10 @@ from sqlalchemy.orm import relationship
 
 
 class Books(Base):
+    # Table name
     __tablename__ = 'books'
 
+    # Table attributes
     id = Column(Integer, primary_key=True)
     book_name = Column(String, nullable=False)
     namber_of_pages = Column(Integer, nullable=False)

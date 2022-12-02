@@ -3,8 +3,10 @@ from sqlalchemy import Integer, Column, ForeignKey
 
 
 class Books_Genres(Base):
+    # Table name
     __tablename__ = 'books_genres'
 
+    # Table attributes
     id = Column(Integer, primary_key=True)
     book_id = Column(Integer, ForeignKey('books.id'))
-    genre_id = Column(Integer, ForeignKey('genres.id'))
+    genre_id = Column(Integer, ForeignKey('genres.id',ondelete='CASCADE'))
