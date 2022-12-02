@@ -1,5 +1,5 @@
 from flask import Flask
-
+from Create_db import create_database
 
 app = Flask(__name__)
 
@@ -10,4 +10,5 @@ def hello():
 
 
 if __name__ == "__main__":
+    create_database()
     app.run()
