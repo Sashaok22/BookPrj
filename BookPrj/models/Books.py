@@ -1,3 +1,7 @@
+from typing import Optional
+
+from pydantic import BaseModel
+
 from models.database import Base
 from sqlalchemy import Integer, String, Column
 from sqlalchemy.orm import relationship
@@ -10,7 +14,20 @@ class Books(Base):
     # Table attributes
     id = Column(Integer, primary_key=True)
     book_name = Column(String, nullable=False)
-    namber_of_pages = Column(Integer, nullable=False)
+    number_of_pages = Column(Integer, nullable=False)
     reiting = Column(Integer, nullable=False)
     author = relationship('Authors_Books')
     genre = relationship('Books_Genres')
+
+    def __str__(self):
+        return f'ID: {self.id}, Book name: {self.book_name}, Number of pages: {self.number_of_pages}, Reiting: {self.reiting}.'
+
+
+class BooksSchema(BaseModel):
+    id: Optional[int]
+    book_name: str
+    number_of_pages: int
+    reiting: int
+
+    class Config:
+        orm_mode = True
