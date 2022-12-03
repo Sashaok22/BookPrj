@@ -12,5 +12,5 @@ class Books(Base):
     book_name = Column(String, nullable=False)
     namber_of_pages = Column(Integer, nullable=False)
     reiting = Column(Integer, nullable=False)
-    author = relationship('authors')
-    genre = relationship('genres')
+    author = relationship('Authors_Books')
+    genre = relationship('Books_Genres')
