@@ -12,4 +12,4 @@ class Authors(Base):
     author_name = Column(String, nullable=False)
     author_surname = Column(String, nullable=False)
     author_patronymic = Column(String, nullable=True)
-    book = relationship('books')
+    book = relationship('Authors_Books')

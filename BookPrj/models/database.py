@@ -20,6 +20,7 @@ engine = create_engine(f'{DATABASE_DIALECT}+{DATABASE_DRIVER}://'
 # create session to manage data
 Session = sessionmaker(bind=engine)
 
+# create base model
 Base = declarative_base()
 
 

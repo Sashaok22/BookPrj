@@ -11,4 +11,4 @@ class Genres(Base):
     id = Column(Integer, primary_key=True)
     genre_name = Column(String, nullable=False)
     short_description = Column(String, nullable=False)
-    book = relationship('books')
+    book = relationship('Books_Genres')
