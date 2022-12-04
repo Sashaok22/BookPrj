@@ -1,4 +1,6 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, abort
+from pydantic import ValidationError
+
 from Create_db import create_database
 from json_serializable import JSONSerializable
 from models.Genres import Genres, GenresSchema
@@ -16,19 +18,30 @@ def hello():
 
 @app.get("/api/genres")
 def get_genres(db: Session = Session()):
-    return jsonify(db.query(Genres).all())
+    genre = db.query(Genres).all()
+    if genre is None:
+        abort(404)
+    return jsonify(genre)
 
 
 @app.get("/api/genres/<int:genre_id>")
 def get_genre(genre_id, db: Session = Session()):
-    genre = db.query(Genres).filter(Genres.id == genre_id).first()
+    genre = db.query(Genres).get(genre_id)
+    if genre is None:
+        abort(404)
     return jsonify(genre)
 
 
 @app.post("/api/genres")
 def create_genre(db: Session = Session()):
-    genre = GenresSchema(genre_name=request.form["genre_name"],
-                         short_description=request.form["short_description"])
+    if request == None:
+        abort(400)
+
+    try:
+        genre = GenresSchema(genre_name=request.form["genre_name"],
+                             short_description=request.form["short_description"])
+    except ValidationError as e:
+        return "Exception" + e.json()
     _genre = Genres(**genre.dict())
     db.add(_genre)
     db.commit()
@@ -36,12 +49,34 @@ def create_genre(db: Session = Session()):
     return jsonify(_genre)
 
 
+@app.put("/api/genres/<int:genre_id>")
+def update_genre(genre_id, db: Session = Session()):
+    if request == None:
+        abort(400)
+    try:
+        genre = GenresSchema(genre_name=request.form["genre_name"],
+                             short_description=request.form["short_description"])
+    except ValidationError as e:
+        return "Exception" + e.json()
+    genre = db.query(Genres).get(genre_id)
+    if genre is None:
+        abort(404)
+    genre.genre_name = request.form["genre_name"]
+    genre.short_description = request.form["short_description"]
+    db.add(genre)
+    db.commit()
+    db.refresh(genre)
+    return jsonify(genre)
+
+
 @app.delete("/api/genres/<int:genre_id>")
 def delete_genre(genre_id, db: Session = Session()):
-    genre = db.query(Genres).filter(Genres.id == genre_id).first()
+    genre = db.query(Genres).get(genre_id)
+    if genre is None:
+        abort(404)
     db.delete(genre)
     db.commit()
-    return jsonify(db.query(Genres).all())
+    return jsonify(True)
 
 
 if __name__ == "__main__":
