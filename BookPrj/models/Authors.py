@@ -2,8 +2,14 @@ from datetime import date, datetime
 from typing import Optional
 from pydantic import BaseModel, Field, validator, root_validator
 from models.database import Base
-from sqlalchemy import Integer, String, Column, Date
+from sqlalchemy import Integer, String, Column, Date, ForeignKey, Table
 from sqlalchemy.orm import relationship
+
+
+association_table = Table("association_table", Base.metadata,
+                          Column('book_id', ForeignKey('books.id'), primary_key=True),
+                          Column("author_id", ForeignKey('authors.id', ondelete='CASCADE'), primary_key=True),
+                          )
 
 
 class Authors(Base):
@@ -17,7 +23,7 @@ class Authors(Base):
     author_patronymic = Column(String, nullable=True)
     date_of_birth = Column(Date, nullable=False)
     date_of_death = Column(Date, nullable=True)
-    book = relationship('Authors_Books')
+    book = relationship('Authors', secondary=association_table, backref="Authors_Books")
 
 
 class AuthorsSchema(BaseModel):

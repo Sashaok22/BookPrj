@@ -175,6 +175,7 @@ def update_book(book_id, db: Session = Session()):
         BooksSchema(**request.form)
     except ValidationError as e:
         return "Exception" + e.json()
+    print("sssssssssssssssssssssssssssssssssssss")
     book = db.query(Books).get(book_id)
     if book is None:
         abort(404)
