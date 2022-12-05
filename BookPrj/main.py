@@ -21,7 +21,7 @@ def hello():
 @app.get("/api/genres")
 def get_genres(db: Session = Session()):
     genre = db.query(Genres).all()
-    if genre is None:
+    if not genre:
         abort(404)
     return jsonify(genre)
 
@@ -35,7 +35,7 @@ def get_genres_authors(genre_id, db: Session = Session()):
         books_authors.c.author_id == Authors.id,
         Genres.id == genre_id
     )).all()
-    if authors is None:
+    if not authors:
         abort(404)
     return jsonify(authors)
 
@@ -47,7 +47,7 @@ def get_genres_books(genre_id, db: Session = Session()):
         books_genres.c.genre_id == Genres.id,
         Genres.id == genre_id
     )).all()
-    if books is None:
+    if not books:
         abort(404)
     return jsonify(books)
 
@@ -55,14 +55,14 @@ def get_genres_books(genre_id, db: Session = Session()):
 @app.get("/api/genres/<int:genre_id>")
 def get_genre(genre_id, db: Session = Session()):
     genre = db.query(Genres).get(genre_id)
-    if genre is None:
+    if not genre:
         abort(404)
     return jsonify(genre)
 
 
 @app.post("/api/genres")
 def create_genre(db: Session = Session()):
-    if request == None:
+    if not request:
         abort(400)
     try:
         genre = GenresSchema(**request.form)
@@ -77,14 +77,14 @@ def create_genre(db: Session = Session()):
 
 @app.put("/api/genres/<int:genre_id>")
 def update_genre(genre_id, db: Session = Session()):
-    if request == None:
+    if not request:
         abort(400)
     try:
         GenresSchema(**request.form)
     except ValidationError as e:
         return "Exception" + e.json()
     genre = db.query(Genres).get(genre_id)
-    if genre is None:
+    if not genre:
         abort(404)
     genre.genre_name = request.form['genre_name']
     genre.short_description = request.form['short_description']
@@ -97,7 +97,7 @@ def update_genre(genre_id, db: Session = Session()):
 @app.delete("/api/genres/<int:genre_id>")
 def delete_genre(genre_id, db: Session = Session()):
     genre = db.query(Genres).get(genre_id)
-    if genre is None:
+    if not genre:
         abort(404)
     db.delete(genre)
     db.commit()
@@ -112,7 +112,7 @@ def get_authors(db: Session = Session()):
         books_authors.c.book_id == Books.id,
         books_authors.c.author_id == Authors.id,
     )).all()
-    if author is None:
+    if not author:
         abort(404)
     data = []
     for row in author:
@@ -127,8 +127,9 @@ def get_author(author_id, db: Session = Session()):
         books_genres.c.genre_id == Genres.id,
         books_authors.c.book_id == Books.id,
         books_authors.c.author_id == Authors.id,
+        Authors.id == author_id
     )).all()
-    if author is None:
+    if not author:
         abort(404)
     data = []
     for row in author:
@@ -192,12 +193,11 @@ def get_books(db: Session = Session()):
         books_authors.c.author_id == Authors.id,
     ))
     if not request.values:
-        _book = book.group_by(Books.id).all()
-
+        _book = book.all()
     else:
         reit = request.values['reiting']
         _book = book.filter(Books.reiting == reit).all()
-    if _book is None:
+    if not _book:
         abort(404)
     data = []
     for row in _book:
@@ -213,7 +213,7 @@ def get_book(book_id, db: Session = Session()):
         books_authors.c.book_id == Books.id,
         books_authors.c.author_id == Authors.id,
         Books.id == book_id
-    )).group_by(Books.id).all()
+    )).all()
     if book is None:
         abort(404)
     data = []
