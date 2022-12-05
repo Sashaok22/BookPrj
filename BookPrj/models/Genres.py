@@ -6,8 +6,8 @@ from pydantic import BaseModel, Field
 
 
 books_genres = Table("books_genres", Base.metadata,
-                          Column('book_id', ForeignKey('books.id'), primary_key=True),
-                          Column("genre_id", ForeignKey('genres.id', ondelete='CASCADE'), primary_key=True),
+                          Column('book_id', ForeignKey('books.id',ondelete='CASCADE'), primary_key=True),
+                          Column("genre_id", ForeignKey('genres.id'), primary_key=True),
                           )
 
 class Genres(Base):

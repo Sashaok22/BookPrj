@@ -26,6 +26,32 @@ def get_genres(db: Session = Session()):
     return jsonify(genre)
 
 
+@app.get("/api/genres_authors/<int:genre_id>")
+def get_genres_authors(genre_id, db: Session = Session()):
+    authors = db.query(Books).filter(and_(
+        books_genres.c.book_id == Books.id,
+        books_genres.c.genre_id == Genres.id,
+        books_authors.c.book_id == Books.id,
+        books_authors.c.author_id == Authors.id,
+        Genres.id == genre_id
+    )).all()
+    if authors is None:
+        abort(404)
+    return jsonify(authors)
+
+
+@app.get("/api/genres_books/<int:genre_id>")
+def get_genres_books(genre_id, db: Session = Session()):
+    books = db.query(Books).filter(and_(
+        books_genres.c.book_id == Books.id,
+        books_genres.c.genre_id == Genres.id,
+        Genres.id == genre_id
+    )).all()
+    if books is None:
+        abort(404)
+    return jsonify(books)
+
+
 @app.get("/api/genres/<int:genre_id>")
 def get_genre(genre_id, db: Session = Session()):
     genre = db.query(Genres).get(genre_id)
@@ -38,7 +64,6 @@ def get_genre(genre_id, db: Session = Session()):
 def create_genre(db: Session = Session()):
     if request == None:
         abort(400)
-
     try:
         genre = GenresSchema(**request.form)
     except ValidationError as e:
@@ -81,18 +106,34 @@ def delete_genre(genre_id, db: Session = Session()):
 
 @app.get("/api/authors")
 def get_authors(db: Session = Session()):
-    author = db.query(Authors).all()
+    author = db.query(Authors, Books, Genres).filter(and_(
+        books_genres.c.book_id == Books.id,
+        books_genres.c.genre_id == Genres.id,
+        books_authors.c.book_id == Books.id,
+        books_authors.c.author_id == Authors.id,
+    )).all()
     if author is None:
         abort(404)
-    return jsonify(author)
+    data = []
+    for row in author:
+        data.append([x for x in row])
+    return jsonify(data)
 
 
 @app.get("/api/authors/<int:author_id>")
 def get_author(author_id, db: Session = Session()):
-    author = db.query(Authors).get(author_id)
+    author = db.query(Authors, Books, Genres).filter(and_(
+        books_genres.c.book_id == Books.id,
+        books_genres.c.genre_id == Genres.id,
+        books_authors.c.book_id == Books.id,
+        books_authors.c.author_id == Authors.id,
+    )).all()
     if author is None:
         abort(404)
-    return jsonify(author)
+    data = []
+    for row in author:
+        data.append([x for x in row])
+    return jsonify(data)
 
 
 @app.post("/api/authors")
@@ -144,21 +185,41 @@ def delete_author(author_id, db: Session = Session()):
 
 @app.get("/api/books")
 def get_books(db: Session = Session()):
-    book = db.query(Books, Genres).filter(and_(
+    book = db.query(Books, Genres, Authors).filter(and_(
         books_genres.c.book_id == Books.id,
-        books_genres.c.genre_id == Genres.id
-    )).all()
-    if book is None:
+        books_genres.c.genre_id == Genres.id,
+        books_authors.c.book_id == Books.id,
+        books_authors.c.author_id == Authors.id,
+    ))
+    if not request.values:
+        _book = book.group_by(Books.id).all()
+
+    else:
+        reit = request.values['reiting']
+        _book = book.filter(Books.reiting == reit).all()
+    if _book is None:
         abort(404)
-    return jsonify(book[0][0] + book[0][1])
+    data = []
+    for row in _book:
+        data.append([x for x in row])
+    return jsonify(data)
 
 
 @app.get("/api/books/<int:book_id>")
 def get_book(book_id, db: Session = Session()):
-    book = db.query(Books).get(book_id)
+    book = db.query(Books, Genres, Authors).filter(and_(
+        books_genres.c.book_id == Books.id,
+        books_genres.c.genre_id == Genres.id,
+        books_authors.c.book_id == Books.id,
+        books_authors.c.author_id == Authors.id,
+        Books.id == book_id
+    )).group_by(Books.id).all()
     if book is None:
         abort(404)
-    return jsonify(book)
+    data = []
+    for row in book:
+        data.append([x for x in row])
+    return jsonify(data)
 
 
 @app.post("/api/books")
