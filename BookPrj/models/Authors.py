@@ -5,11 +5,10 @@ from models.database import Base
 from sqlalchemy import Integer, String, Column, Date, ForeignKey, Table
 from sqlalchemy.orm import relationship
 
-
 books_authors = Table("books_authors", Base.metadata,
-                          Column('book_id', ForeignKey('books.id'), primary_key=True),
-                          Column("author_id", ForeignKey('authors.id', ondelete='CASCADE'), primary_key=True),
-                          )
+                      Column('book_id', ForeignKey('books.id', ondelete='CASCADE'), primary_key=True),
+                      Column("author_id", ForeignKey('authors.id'), primary_key=True),
+                      )
 
 
 class Authors(Base):
