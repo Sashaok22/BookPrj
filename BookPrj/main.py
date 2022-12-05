@@ -1,11 +1,11 @@
 from flask import Flask, request, jsonify, abort
 from pydantic import ValidationError
-
+from sqlalchemy import and_
 from Create_db import create_database
 from json_serializable import JSONSerializable
-from models.Authors import Authors, AuthorsSchema
+from models.Authors import Authors, AuthorsSchema, books_authors
 from models.Books import Books, BooksSchema
-from models.Genres import Genres, GenresSchema
+from models.Genres import Genres, GenresSchema, books_genres
 from models.database import Session
 
 app = Flask(__name__)
@@ -61,7 +61,8 @@ def update_genre(genre_id, db: Session = Session()):
     genre = db.query(Genres).get(genre_id)
     if genre is None:
         abort(404)
-    genre = request.form
+    genre.genre_name = request.form['genre_name']
+    genre.short_description = request.form['short_description']
     db.add(genre)
     db.commit()
     db.refresh(genre)
@@ -120,7 +121,11 @@ def update_author(author_id, db: Session = Session()):
     author = db.query(Authors).get(author_id)
     if author is None:
         abort(404)
-    author = request.form
+    author.author_name = request.form['author_name']
+    author.author_surname = request.form['author_surname']
+    author.author_patronymic = request.form['author_patronymic']
+    author.date_of_birth = request.form['date_of_birth']
+    author.date_of_death = request.form['date_of_death']
     db.add(author)
     db.commit()
     db.refresh(author)
@@ -136,12 +141,16 @@ def delete_author(author_id, db: Session = Session()):
     db.commit()
     return jsonify(True)
 
+
 @app.get("/api/books")
 def get_books(db: Session = Session()):
-    book = db.query(Books).all()
+    book = db.query(Books, Genres).filter(and_(
+        books_genres.c.book_id == Books.id,
+        books_genres.c.genre_id == Genres.id
+    )).all()
     if book is None:
         abort(404)
-    return jsonify(book)
+    return jsonify(book[0][0] + book[0][1])
 
 
 @app.get("/api/books/<int:book_id>")
@@ -162,6 +171,17 @@ def create_book(db: Session = Session()):
         return "Exception" + e.json()
     _book = Books(**book.dict())
     db.add(_book)
+
+    # adding genres to the created book
+    genres_list_id = request.form["genres_id"].split(',')
+    genre_list = [db.query(Genres).get(gnr_id) for gnr_id in genres_list_id]
+    [gnr.book.append(_book) for gnr in genre_list]
+
+    # adding authors to the created book
+    authors_list_id = request.form["authors_id"].split(',')
+    author_list = [db.query(Authors).get(author_id) for author_id in authors_list_id]
+    [author.book.append(_book) for author in author_list]
+
     db.commit()
     db.refresh(_book)
     return jsonify(_book)
@@ -175,12 +195,32 @@ def update_book(book_id, db: Session = Session()):
         BooksSchema(**request.form)
     except ValidationError as e:
         return "Exception" + e.json()
-    print("sssssssssssssssssssssssssssssssssssss")
     book = db.query(Books).get(book_id)
     if book is None:
         abort(404)
-    book = request.form
+    book.book_name = request.form['book_name']
+    book.number_of_pages = request.form['number_of_pages']
+    book.reiting = request.form['reiting']
     db.add(book)
+
+    genre_list = db.query(Genres).filter(and_(
+        books_genres.c.book_id == book.id,
+        books_genres.c.genre_id == Genres.id
+    )).all()
+    [gnr.book.remove(book) for gnr in genre_list]
+    genres_list_id = request.form["genres_id"].split(',')
+    genre_list = [db.query(Genres).get(gnr_id) for gnr_id in genres_list_id]
+    [gnr.book.append(book) for gnr in genre_list]
+
+    author_list = db.query(Authors).filter(and_(
+        books_authors.c.book_id == book.id,
+        books_authors.c.author_id == Authors.id
+    )).all()
+    [author.book.remove(book) for author in author_list]
+    authors_list_id = request.form["authors_id"].split(',')
+    author_list = [db.query(Authors).get(author_id) for author_id in authors_list_id]
+    [author.book.append(book) for author in author_list]
+
     db.commit()
     db.refresh(book)
     return jsonify(book)

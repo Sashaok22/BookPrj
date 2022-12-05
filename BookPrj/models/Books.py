@@ -1,10 +1,7 @@
 from typing import Optional
-
 from pydantic import BaseModel, Field
-
 from models.database import Base
 from sqlalchemy import Integer, String, Column
-from sqlalchemy.orm import relationship
 
 
 class Books(Base):
@@ -16,8 +13,6 @@ class Books(Base):
     book_name = Column(String, nullable=False)
     number_of_pages = Column(Integer, nullable=False)
     reiting = Column(Integer, nullable=False)
-    author = relationship('Authors_Books')
-    genre = relationship('Books_Genres')
 
 
 class BooksSchema(BaseModel):
