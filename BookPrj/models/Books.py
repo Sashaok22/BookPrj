@@ -19,9 +19,6 @@ class Books(Base):
     author = relationship('Authors_Books')
     genre = relationship('Books_Genres')
 
-    def __str__(self):
-        return f'ID: {self.id}, Book name: {self.book_name}, Number of pages: {self.number_of_pages}, Reiting: {self.reiting}.'
-
 
 class BooksSchema(BaseModel):
     id: Optional[int]
