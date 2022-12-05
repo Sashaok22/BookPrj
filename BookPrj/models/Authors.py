@@ -1,6 +1,6 @@
 from datetime import date, datetime
 from typing import Optional
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, validator, root_validator
 from models.database import Base
 from sqlalchemy import Integer, String, Column, Date
 from sqlalchemy.orm import relationship
@@ -22,22 +22,35 @@ class Authors(Base):
 
 class AuthorsSchema(BaseModel):
     id: Optional[int]
-    author_name: str = Field(..., min_length=1)
-    author_surname: str = Field(..., min_length=1)
+    author_name: str = Field(..., min_length=2)
+    author_surname: str = Field(..., min_length=2)
     author_patronymic: Optional[str]
-    date_of_birth: date
+    date_of_birth: str
     date_of_death: Optional[str]
 
-    @validator('date_of_death')
-    def date_of_death_test(cls, v):
-        if v == "":
-            return None
-        elif datetime.strptime(v, "%Y-%m-%d"):
-            return v
+    @root_validator
+    def date_validation(cls, v):
+        if v['date_of_death'] == "":
+            v['date_of_death'] = None
+        if v['date_of_death'] != None:
+            if datetime.strptime(v['date_of_death'] and v['date_of_birth'], "%Y-%m-%d"):
+                v['date_of_death'] = datetime.strptime(v['date_of_death'], "%Y-%m-%d")
+                v['date_of_birth'] = datetime.strptime(v['date_of_birth'], "%Y-%m-%d")
+                if v['date_of_death'] > v['date_of_birth'] \
+                        or (v['date_of_death'] > datetime.now() or v['date_of_birth'] > datetime.now()):
+                    raise ValueError('the date of death must be before the date of birth '
+                                     'and both dates must be before the current moment')
+                return v
+            else:
+                raise ValueError('invalid date format')
+        elif datetime.strptime(v['date_of_birth'], "%Y-%m-%d"):
+            v['date_of_birth'] = datetime.strptime(v['date_of_birth'], "%Y-%m-%d")
+            if v['date_of_birth'] > datetime.now():
+                raise ValueError('the date of birth must be before the current moment')
+            else:
+                return v
         else:
             raise ValueError('invalid date format')
-
-    validator('date_of_death')
 
     @validator('author_patronymic')
     def author_patronymic_test(cls, v):

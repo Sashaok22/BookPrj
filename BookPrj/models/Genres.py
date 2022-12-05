@@ -2,7 +2,7 @@ from typing import Optional
 from models.database import Base
 from sqlalchemy import Integer, String, Column
 from sqlalchemy.orm import relationship
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class Genres(Base):
@@ -15,14 +15,11 @@ class Genres(Base):
     short_description = Column(String, nullable=False)
     book = relationship('Books_Genres')
 
-    def __str__(self):
-        return f'ID: {self.id}, Genre name: {self.genre_name}, Short description: {self.short_description}.'
-
 
 class GenresSchema(BaseModel):
     id: Optional[int]
-    genre_name: str
-    short_description: str
+    genre_name: str = Field(..., min_length=2)
+    short_description: str = Field(..., min_length=2)
 
     class Config:
         orm_mode = True

@@ -4,6 +4,7 @@ from pydantic import ValidationError
 from Create_db import create_database
 from json_serializable import JSONSerializable
 from models.Authors import Authors, AuthorsSchema
+from models.Books import Books, BooksSchema
 from models.Genres import Genres, GenresSchema
 from models.database import Session
 
@@ -60,8 +61,7 @@ def update_genre(genre_id, db: Session = Session()):
     genre = db.query(Genres).get(genre_id)
     if genre is None:
         abort(404)
-    genre.genre_name = request.form["genre_name"]
-    genre.short_description = request.form["short_description"]
+    genre = request.form
     db.add(genre)
     db.commit()
     db.refresh(genre)
@@ -120,11 +120,7 @@ def update_author(author_id, db: Session = Session()):
     author = db.query(Authors).get(author_id)
     if author is None:
         abort(404)
-    author.author_surname = request.form["author_surname"]
-    author.author_name = request.form["author_name"]
-    author.author_patronymic = request.form["author_patronymic"]
-    author.date_of_birth = request.form["date_of_birth"]
-    author.date_of_death = request.form["date_of_death"]
+    author = request.form
     db.add(author)
     db.commit()
     db.refresh(author)
@@ -137,6 +133,64 @@ def delete_author(author_id, db: Session = Session()):
     if author is None:
         abort(404)
     db.delete(author)
+    db.commit()
+    return jsonify(True)
+
+@app.get("/api/books")
+def get_books(db: Session = Session()):
+    book = db.query(Books).all()
+    if book is None:
+        abort(404)
+    return jsonify(book)
+
+
+@app.get("/api/books/<int:book_id>")
+def get_book(book_id, db: Session = Session()):
+    book = db.query(Books).get(book_id)
+    if book is None:
+        abort(404)
+    return jsonify(book)
+
+
+@app.post("/api/books")
+def create_book(db: Session = Session()):
+    if request == None:
+        abort(400)
+    try:
+        book = BooksSchema(**request.form)
+    except ValidationError as e:
+        return "Exception" + e.json()
+    _book = Books(**book.dict())
+    db.add(_book)
+    db.commit()
+    db.refresh(_book)
+    return jsonify(_book)
+
+
+@app.put("/api/books/<int:book_id>")
+def update_book(book_id, db: Session = Session()):
+    if request == None:
+        abort(400)
+    try:
+        BooksSchema(**request.form)
+    except ValidationError as e:
+        return "Exception" + e.json()
+    book = db.query(Books).get(book_id)
+    if book is None:
+        abort(404)
+    book = request.form
+    db.add(book)
+    db.commit()
+    db.refresh(book)
+    return jsonify(book)
+
+
+@app.delete("/api/books/<int:book_id>")
+def delete_book(book_id, db: Session = Session()):
+    book = db.query(Books).get(book_id)
+    if book is None:
+        abort(404)
+    db.delete(book)
     db.commit()
     return jsonify(True)
 
