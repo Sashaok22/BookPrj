@@ -1,6 +1,6 @@
-from flask import Flask, request, jsonify, abort
+from flask import Flask, request, jsonify, abort, json, Blueprint
 from pydantic import ValidationError
-from sqlalchemy import and_
+from sqlalchemy import and_, func
 from Create_db import create_database
 from json_serializable import JSONSerializable
 from models.Authors import Authors, AuthorsSchema, books_authors
@@ -11,6 +11,15 @@ from models.database import Session
 app = Flask(__name__)
 JSONSerializable(app)
 app.config['SECRET_KEY'] = 'VERY VERY VERY SECRET KEY'
+app.debug = True
+
+bp1 = Blueprint(__name__.split(".")[-1], __name__)
+
+
+
+@bp1.route("/qq")
+def qq():
+    return "Main"
 
 
 @app.route("/")
@@ -186,23 +195,24 @@ def delete_author(author_id, db: Session = Session()):
 
 @app.get("/api/books")
 def get_books(db: Session = Session()):
-    book = db.query(Books, Genres, Authors).filter(and_(
-        books_genres.c.book_id == Books.id,
-        books_genres.c.genre_id == Genres.id,
-        books_authors.c.book_id == Books.id,
-        books_authors.c.author_id == Authors.id,
-    ))
+    book = db.query(Books)
     if not request.values:
         _book = book.all()
     else:
         reit = request.values['reiting']
         _book = book.filter(Books.reiting == reit).all()
+    _book = [
+        {
+            "book": b,
+            "authors": b.Books_Authors,
+            "genres": b.Books_Genres
+        }
+        for b in _book
+    ]
+
     if not _book:
         abort(404)
-    data = []
-    for row in _book:
-        data.append([x for x in row])
-    return jsonify(data)
+    return jsonify(_book)
 
 
 @app.get("/api/books/<int:book_id>")
@@ -298,5 +308,6 @@ def delete_book(book_id, db: Session = Session()):
 
 
 if __name__ == "__main__":
+    app.register_blueprint(bp1)
     create_database()
     app.run()

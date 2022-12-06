@@ -22,8 +22,9 @@ class Authors(Base):
     author_patronymic = Column(String, nullable=True)
     date_of_birth = Column(Date, nullable=False)
     date_of_death = Column(Date, nullable=True)
+
     book = relationship('Books', secondary=books_authors, backref="Books_Authors",
-                        cascade="all, delete")
+                        cascade="all, delete", cascade_backrefs=False)
 
 
 class AuthorsSchema(BaseModel):
@@ -36,14 +37,16 @@ class AuthorsSchema(BaseModel):
 
     @root_validator
     def date_validation(cls, v):
-        if v['date_of_death'] == "":
-            v['date_of_death'] = None
-        if v['date_of_death'] != None:
-            if datetime.strptime(v['date_of_death'] and v['date_of_birth'], "%Y-%m-%d"):
-                v['date_of_death'] = datetime.strptime(v['date_of_death'], "%Y-%m-%d")
+        date_of_death = v['date_of_death']
+        if date_of_death == "":
+            date_of_death = None
+        if date_of_death is not None:
+            if datetime.strptime(date_of_death and v['date_of_birth'], "%Y-%m-%d"):
+                date_of_death = datetime.strptime(date_of_death, "%Y-%m-%d")
+                v['date_of_death'] = date_of_death
                 v['date_of_birth'] = datetime.strptime(v['date_of_birth'], "%Y-%m-%d")
-                if v['date_of_death'] > v['date_of_birth'] \
-                        or (v['date_of_death'] > datetime.now() or v['date_of_birth'] > datetime.now()):
+                if date_of_death > v['date_of_birth'] \
+                        or (date_of_death > datetime.now() or v['date_of_birth'] > datetime.now()):
                     raise ValueError('the date of death must be before the date of birth '
                                      'and both dates must be before the current moment')
                 return v
