@@ -47,7 +47,7 @@ def downgrade() -> None:
     sa.Column('id', sa.INTEGER(), server_default=sa.text("nextval('books_id_seq'::regclass)"), autoincrement=True, nullable=False),
     sa.Column('book_name', sa.VARCHAR(), autoincrement=False, nullable=False),
     sa.Column('number_of_pages', sa.INTEGER(), autoincrement=False, nullable=False),
-    sa.Column('reiting', sa.INTEGER(), autoincrement=False, nullable=False),
+    sa.Column('rating', sa.INTEGER(), autoincrement=False, nullable=False),
     sa.PrimaryKeyConstraint('id', name='books_pkey'),
     postgresql_ignore_search_path=False
     )
