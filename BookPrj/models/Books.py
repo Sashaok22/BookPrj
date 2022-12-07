@@ -14,6 +14,10 @@ class Books(Base):
     number_of_pages = Column(Integer, nullable=False)
     rating = Column(Integer, nullable=False)
 
+    def to_dict(self):
+        return {"id": self.id, 'book_name': self.book_name, 'number_of_pages': self.number_of_pages,
+                'rating': self.rating}
+
 
 class BooksSchema(BaseModel):
     id: Optional[int]

@@ -1,6 +1,6 @@
 from flask import request, jsonify, abort, Blueprint
 from pydantic import ValidationError
-from models.Authors import Authors
+from models.Authors import Authors, AuthorsSchema
 from models.Books import Books
 from models.Genres import Genres, GenresSchema
 from models.database import Session
@@ -46,7 +46,7 @@ def get_genre(genre_id, db: Session = Session()):
     genre = db.query(Genres).get(genre_id)
     if not genre:
         abort(404)
-    return jsonify(genre)
+    return jsonify(GenresSchema(**genre.to_dict()).dict())
 
 
 @genres_blueprint.post("/api/genres")

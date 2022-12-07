@@ -1,9 +1,12 @@
-from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, Field, validator, root_validator
-from models.database import Base
+from pydantic import BaseModel, Field
+from pydantic.validators import date
 from sqlalchemy import Integer, String, Column, Date, ForeignKey, Table
 from sqlalchemy.orm import relationship
+
+from models.Books import BooksSchema
+from models.Genres import GenresSchema
+from models.database import Base
 
 books_authors = Table("books_authors", Base.metadata,
                       Column('book_id', ForeignKey('books.id'), primary_key=True),
@@ -26,48 +29,26 @@ class Authors(Base):
     book = relationship('Books', secondary=books_authors, backref="Books_Authors",
                         cascade="all, delete", cascade_backrefs=False)
 
+    def to_dict(self):
+        return {"id": self.id, 'author_name': self.author_name, 'author_surname': self.author_surname,
+                'author_patronymic': self.author_patronymic, 'date_of_birth': self.date_of_birth,
+                'date_of_death': self.date_of_death}
+
 
 class AuthorsSchema(BaseModel):
-    id: Optional[int]
-    author_name: str = Field(..., min_length=2)
-    author_surname: str = Field(..., min_length=2)
-    author_patronymic: Optional[str]
-    date_of_birth: str
-    date_of_death: Optional[str]
-
-    @root_validator
-    def date_validation(cls, v):
-        date_of_death = v['date_of_death']
-        if date_of_death == "":
-            date_of_death = None
-        if date_of_death is not None:
-            if datetime.strptime(date_of_death and v['date_of_birth'], "%Y-%m-%d"):
-                date_of_death = datetime.strptime(date_of_death, "%Y-%m-%d")
-                v['date_of_death'] = date_of_death
-                v['date_of_birth'] = datetime.strptime(v['date_of_birth'], "%Y-%m-%d")
-                if date_of_death > v['date_of_birth'] \
-                        or (date_of_death > datetime.now() or v['date_of_birth'] > datetime.now()):
-                    raise ValueError('the date of death must be before the date of birth '
-                                     'and both dates must be before the current moment')
-                return v
-            else:
-                raise ValueError('invalid date format')
-        elif datetime.strptime(v['date_of_birth'], "%Y-%m-%d"):
-            v['date_of_birth'] = datetime.strptime(v['date_of_birth'], "%Y-%m-%d")
-            if v['date_of_birth'] > datetime.now():
-                raise ValueError('the date of birth must be before the current moment')
-            else:
-                return v
-        else:
-            raise ValueError('invalid date format')
-
-    @validator('author_patronymic')
-    def author_patronymic_test(cls, v):
-        if v == "":
-            return None
-        elif len(v) < 2:
-            raise ValueError('field length must be greater than 1')
-        return v
+    id: Optional[int] = Field(description="Author person id field")
+    author_name: str = Field(..., min_length=2, description="Author name field")
+    author_surname: str = Field(..., min_length=2, description="Author surname field")
+    author_patronymic: Optional[str] = Field(min_length=2, description="Author patronymic field")
+    date_of_birth: date = Field(..., description="Author date of birth field")
+    date_of_death: Optional[date] = Field(description="Author date of death field")
+    genres: Optional[list[GenresSchema]] = Field(..., description="List of genres in which the author writes field")
+    books: Optional[list[BooksSchema]] = Field(..., description="List of books by this author field")
 
     class Config:
         orm_mode = True
+
+
+class WebError(BaseModel):
+    error_code: int
+    msg: str

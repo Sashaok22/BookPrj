@@ -20,6 +20,9 @@ class Genres(Base):
     short_description = Column(String, nullable=False)
     book = relationship('Books', secondary=books_genres, backref="Books_Genres")
 
+    def to_dict(self):
+        return {"id": self.id, 'genre_name': self.genre_name, 'short_description': self.short_description}
+
 
 class GenresSchema(BaseModel):
     id: Optional[int]
