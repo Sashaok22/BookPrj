@@ -1,8 +1,10 @@
 from flask import request, jsonify, abort, Blueprint
 from pydantic import ValidationError
+
+from alembic_BaseModels.Genres_BaseModels import GenresSchema
 from models.Authors import Authors
 from models.Books import Books
-from models.Genres import Genres, GenresSchema
+from models.Genres import Genres
 from models.database import Session
 
 genres_blueprint = Blueprint(__name__.split(".")[-1], __name__)

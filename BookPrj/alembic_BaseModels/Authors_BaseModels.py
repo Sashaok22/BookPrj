@@ -1,8 +1,8 @@
 from typing import Optional
 from pydantic import BaseModel, Field
 from pydantic.validators import date
-from models.Books import BooksSchema
-from models.Genres import GenresSchema
+from alembic_BaseModels.Books_BaseModels import BooksSchema
+from alembic_BaseModels.Genres_BaseModels import GenresSchema
 
 
 class AuthorSchema(BaseModel):
@@ -20,11 +20,6 @@ class AuthorSchema(BaseModel):
 class Author_content(AuthorSchema):
     genres: Optional[list[GenresSchema]] = Field(description="List of genres in which the author writes field")
     books: Optional[list[BooksSchema]] = Field(description="List of books by this author field")
-
-
-class WebError(BaseModel):
-    error_code: int = Field(..., description="Code of handled server response error")
-    msg: str = Field(..., description="Message error")
 
 
 class AuthorsSchema(BaseModel):

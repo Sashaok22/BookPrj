@@ -1,7 +1,8 @@
 from flask import request, jsonify, abort, Blueprint
 from pydantic import ValidationError
+from alembic_BaseModels.Books_BaseModels import BooksSchema
 from models.Authors import Authors
-from models.Books import Books, BooksSchema
+from models.Books import Books
 from models.Genres import Genres
 from models.database import Session
 

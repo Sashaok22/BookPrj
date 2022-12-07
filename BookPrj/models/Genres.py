@@ -1,8 +1,7 @@
-from typing import Optional
 from models.database import Base
 from sqlalchemy import Integer, String, Column, Table, ForeignKey
 from sqlalchemy.orm import relationship
-from pydantic import BaseModel, Field
+
 
 books_genres = Table("books_genres", Base.metadata,
                      Column('book_id', ForeignKey('books.id'), primary_key=True),
@@ -22,12 +21,3 @@ class Genres(Base):
 
     def to_dict(self):
         return {"id": self.id, 'genre_name': self.genre_name, 'short_description': self.short_description}
-
-
-class GenresSchema(BaseModel):
-    id: Optional[int]
-    genre_name: str = Field(..., min_length=2)
-    short_description: str = Field(..., min_length=2)
-
-    class Config:
-        orm_mode = True

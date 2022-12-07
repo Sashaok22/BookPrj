@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy_utils import database_exists, create_database
 
 
-# Connection data
+# database connection data
 DATABASE_NAME = 'book_shop'
 DATABASE_HOST = 'localhost'
 DATABASE_PORT = '5432'
