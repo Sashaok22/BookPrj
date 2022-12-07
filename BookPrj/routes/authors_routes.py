@@ -1,7 +1,8 @@
 from flask import request, Blueprint
 from pydantic import ValidationError
 from spectree import SpecTree, Response
-from models.Authors import Authors, WebError, AuthorSchema, AuthorsSchema, Author_content
+from alembic_BaseModel.Author_BaseModel import WebError, AuthorsSchema, Author_content, AuthorSchema
+from models.Authors import Authors
 from models.Books import Books, BooksSchema
 from models.Genres import Genres, GenresSchema
 from models.database import Session
