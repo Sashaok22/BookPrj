@@ -1,5 +1,3 @@
-from typing import Optional
-from pydantic import BaseModel, Field
 from models.database import Base
 from sqlalchemy import Integer, String, Column
 
@@ -17,13 +15,3 @@ class Books(Base):
     def to_dict(self):
         return {"id": self.id, 'book_name': self.book_name, 'number_of_pages': self.number_of_pages,
                 'rating': self.rating}
-
-
-class BooksSchema(BaseModel):
-    id: Optional[int]
-    book_name: str = Field(..., min_length=2)
-    number_of_pages: int = Field(..., gt=0)
-    rating: int = Field(..., gt=0, lt=11)
-
-    class Config:
-        orm_mode = True
