@@ -1,6 +1,6 @@
 from flask import request, jsonify, abort, Blueprint
 from pydantic import ValidationError
-from models.Authors import Authors, AuthorSchema
+from models.Authors import Authors
 from models.Books import Books
 from models.Genres import Genres, GenresSchema
 from models.database import Session
