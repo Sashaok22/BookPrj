@@ -1,5 +1,4 @@
 from flask import Flask
-from spectree import SpecTree
 from Create_db import create_database
 from json_serializable import JSONSerializable
 from routes.authors_routes import authors_blueprint, spec
