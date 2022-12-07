@@ -1,6 +1,7 @@
 from flask import request, Blueprint
 from pydantic import ValidationError
-from spectree import SpecTree, Response
+from spectree import Response
+from SpecTree_config import spec
 from alembic_BaseModels.Authors_BaseModels import AuthorsSchema, Author_content, AuthorSchema
 from alembic_BaseModels.Books_BaseModels import BooksSchema
 from alembic_BaseModels.Genres_BaseModels import GenresSchema
@@ -11,7 +12,6 @@ from models.Genres import Genres
 from models.database import Session
 
 authors_blueprint = Blueprint(__name__.split(".")[-1], __name__)
-spec = SpecTree("flask")
 
 
 @authors_blueprint.get("/api/authors")
