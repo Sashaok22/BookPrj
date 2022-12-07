@@ -1,9 +1,8 @@
 from flask import request, jsonify, abort, Blueprint
 from pydantic import ValidationError
-from sqlalchemy import and_
-from models.Authors import Authors, books_authors
+from models.Authors import Authors
 from models.Books import Books
-from models.Genres import Genres, books_genres, GenresSchema
+from models.Genres import Genres, GenresSchema
 from models.database import Session
 
 genres_blueprint = Blueprint(__name__.split(".")[-1], __name__)

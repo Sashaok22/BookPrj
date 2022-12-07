@@ -1,9 +1,8 @@
 from flask import request, jsonify, abort, Blueprint
 from pydantic import ValidationError
-from sqlalchemy import and_
-from models.Authors import Authors, books_authors, AuthorsSchema
+from models.Authors import Authors, AuthorsSchema
 from models.Books import Books
-from models.Genres import Genres, books_genres
+from models.Genres import Genres
 from models.database import Session
 
 authors_blueprint = Blueprint(__name__.split(".")[-1], __name__)
@@ -11,39 +10,44 @@ authors_blueprint = Blueprint(__name__.split(".")[-1], __name__)
 
 @authors_blueprint.get("/api/authors")
 def get_authors(db: Session = Session()):
-    author = db.query(Authors)\
-        .join(Books.Books_Authors)\
+    author = db.query(Authors) \
+        .join(Books.Books_Authors) \
         .join(Books.Books_Genres).all()
     if not author:
         abort(404)
-    [print(a) for a in author]
     author = [
         {
             "author": a,
             "books": a.book,
-            "genres": a.book.Books_Genres
+            "genres": db.query(Genres)
+            .join(Books.Books_Authors)
+            .join(Books.Books_Genres)
+            .filter(Authors.id == a.id).all()
         }
         for a in author
-
     ]
     return jsonify(author)
 
 
 @authors_blueprint.get("/api/authors/<int:author_id>")
 def get_author(author_id, db: Session = Session()):
-    author = db.query(Authors, Books, Genres).filter(and_(
-        books_genres.c.book_id == Books.id,
-        books_genres.c.genre_id == Genres.id,
-        books_authors.c.book_id == Books.id,
-        books_authors.c.author_id == Authors.id,
-        Authors.id == author_id
-    )).all()
+    author = db.query(Authors) \
+        .join(Books.Books_Authors) \
+        .join(Books.Books_Genres)\
+        .filter(Authors.id == author_id).all()
     if not author:
         abort(404)
-    data = []
-    for row in author:
-        data.append([x for x in row])
-    return jsonify(data)
+    author = [
+        {
+            "author": author[0],
+            "books": author[0].book,
+            "genres": db.query(Genres)
+            .join(Books.Books_Authors)
+            .join(Books.Books_Genres)
+            .filter(Authors.id == author[0].id).all()
+        }
+    ]
+    return jsonify(author)
 
 
 @authors_blueprint.post("/api/authors")
