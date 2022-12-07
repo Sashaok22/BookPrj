@@ -2,7 +2,7 @@ from flask import request, jsonify, abort, Blueprint
 from pydantic import ValidationError
 from spectree import SpecTree, Response
 
-from models.Authors import Authors, AuthorsSchema, WebError
+from models.Authors import Authors, AuthorSchema, WebError, AuthorSchema, AuthorsSchema
 from models.Books import Books, BooksSchema
 from models.Genres import Genres, GenresSchema
 from models.database import Session
@@ -12,32 +12,30 @@ spec = SpecTree("flask")
 
 
 @authors_blueprint.get("/api/authors")
-@spec.validate(resp=Response(HTTP_404=(WebError, "Authors not found"), HTTP_200=AuthorsSchema), tags=["Authors_request"])
 def get_authors(db: Session = Session()):
     """
         Get all authors.
     """
-    author = db.query(Authors) \
+    authors = db.query(Authors) \
         .join(Books.Books_Authors) \
         .join(Books.Books_Genres).all()
-    if not author:
+    if not authors:
         return WebError({'error_code': 404, 'msg': "Authors not found"})
-    author = [
-        {
-            "author": a,
-            "books": a.book,
-            "genres": db.query(Genres)
-            .join(Books.Books_Authors)
-            .join(Books.Books_Genres)
-            .filter(Authors.id == a.id).all()
-        }
-        for a in author
-    ]
-    return jsonify(author)
+    all_authors = []
+    for a in authors:
+        _author = AuthorSchema(**a.to_dict())
+        genres = db.query(Genres).join(Books.Books_Authors).join(Books.Books_Genres).all()
+        _author.genres = [GenresSchema(**g.to_dict()) for g in genres]
+        books = a.book
+        _author.books = [BooksSchema(**b.to_dict()) for b in books]
+        all_authors.append(_author)
+    response = AuthorsSchema()
+    response.Authors = all_authors
+    return response.dict()
 
 
 @authors_blueprint.get("/api/authors/<int:author_id>")
-@spec.validate(resp=Response(HTTP_404=(WebError, "Author not found"), HTTP_200=AuthorsSchema), tags=["Authors_request"])
+@spec.validate(resp=Response(HTTP_404=(WebError, "Author not found"), HTTP_200=AuthorSchema), tags=["Authors_request"])
 def get_author(author_id, db: Session = Session()):
     """
         Find author by id.
@@ -48,7 +46,7 @@ def get_author(author_id, db: Session = Session()):
         .filter(Authors.id == author_id).all()
     if not author:
         return WebError({'error_code': 404, 'msg': "Author not found"})
-    _author = AuthorsSchema(**author[0].to_dict())
+    _author = AuthorSchema(**author[0].to_dict())
     genres = db.query(Genres).join(Books.Books_Authors).join(Books.Books_Genres).all()
     _author.genres = [GenresSchema(**g.to_dict()) for g in genres]
     books = author[0].book
@@ -57,12 +55,12 @@ def get_author(author_id, db: Session = Session()):
 
 
 @authors_blueprint.post("/api/authors")
-@spec.validate(json=AuthorsSchema, resp=Response('HTTP_400', HTTP_200=AuthorsSchema), tags=["Authors_request"])
+@spec.validate(json=AuthorSchema, resp=Response('HTTP_400', HTTP_200=AuthorSchema), tags=["Authors_request"])
 def create_author(db: Session = Session()):
     if request is None:
         abort(400)
     try:
-        author = AuthorsSchema(**request.json)
+        author = AuthorSchema(**request.json)
     except ValidationError as e:
         return "Exception" + e.json()
     _author = Authors(**author.dict())
@@ -77,7 +75,7 @@ def update_author(author_id, db: Session = Session()):
     if request is None:
         abort(400)
     try:
-        AuthorsSchema(**request.form)
+        AuthorSchema(**request.form)
     except ValidationError as e:
         return "Exception" + e.json()
     author = db.query(Authors).get(author_id)
