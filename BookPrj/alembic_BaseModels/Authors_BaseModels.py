@@ -1,7 +1,7 @@
 from datetime import datetime, date
 from typing import Optional
 from pydantic import BaseModel, Field, root_validator
-from alembic_BaseModels.Books_BaseModels import BooksSchema
+
 from alembic_BaseModels.Genres_BaseModels import GenresSchema
 
 
@@ -26,9 +26,10 @@ class AuthorSchema(BaseModel):
 
 
 class Author_content(AuthorSchema):
+    from alembic_BaseModels.Books_BaseModels import BookSchema
     genres: Optional[list[GenresSchema]] = Field(description="List of genres in which the author writes field")
-    books: Optional[list[BooksSchema]] = Field(description="List of books by this author field")
+    books: Optional[list[BookSchema]] = Field(description="List of books by this author field")
 
 
 class AuthorsSchema(BaseModel):
-    Authors: Optional[list[Author_content]] = Field(description="List of models of authors")
+    authors: Optional[list[Author_content]] = Field(description="List of models of authors")

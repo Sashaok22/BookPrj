@@ -3,7 +3,7 @@ from pydantic import ValidationError
 from spectree import Response
 from SpecTree_config import spec
 from alembic_BaseModels.Authors_BaseModels import AuthorSchema
-from alembic_BaseModels.Books_BaseModels import BooksSchema
+from alembic_BaseModels.Books_BaseModels import BookSchema
 from alembic_BaseModels.Genres_BaseModels import GenresSchema
 from alembic_BaseModels.Others_BaseModels import WebError
 from models.Authors import Authors
@@ -18,6 +18,11 @@ genres_blueprint = Blueprint(__name__.split(".")[-1], __name__)
 @spec.validate(resp=Response(HTTP_404=(WebError, "Genres not found"),
                              HTTP_200=(GenresSchema, 'Successful operation')), tags=["Genres_request"])
 def get_genres(db: Session = Session()):
+    """
+        Get all genres
+
+        Return all genres
+    """
     genre = db.query(Genres).all()
     if not genre:
         abort(make_response(WebError(error_code=404, msg="Genres not found").dict(), 404))
@@ -29,6 +34,11 @@ def get_genres(db: Session = Session()):
 @spec.validate(resp=Response(HTTP_404=(WebError, "Authors not found"),
                              HTTP_200=(AuthorSchema, 'Successful operation')), tags=["Genres_request"])
 def get_genres_authors(genre_id, db: Session = Session()):
+    """
+        Find all authors by genre
+
+        Return all authors by genre
+    """
     authors = db.query(Authors)\
         .join(Books.Books_Authors)\
         .join(Books.Books_Genres)\
@@ -43,8 +53,13 @@ def get_genres_authors(genre_id, db: Session = Session()):
 
 @genres_blueprint.get("/api/genres_books/<int:genre_id>")
 @spec.validate(resp=Response(HTTP_404=(WebError, "Books not found"),
-                             HTTP_200=(BooksSchema, 'Successful operation')), tags=["Genres_request"])
+                             HTTP_200=(BookSchema, 'Successful operation')), tags=["Genres_request"])
 def get_genres_books(genre_id, db: Session = Session()):
+    """
+        Find all books by genre
+
+        Return all books by genre
+    """
     books = db.query(Books)\
         .join(Books.Books_Genres)\
         .filter(
@@ -52,7 +67,7 @@ def get_genres_books(genre_id, db: Session = Session()):
     ).all()
     if not books:
         abort(make_response(WebError(error_code=404, msg="Books not found").dict(), 404))
-    _books = BooksSchema.from_orm(books)
+    _books = BookSchema.from_orm(books)
     return _books
 
 
@@ -60,6 +75,11 @@ def get_genres_books(genre_id, db: Session = Session()):
 @spec.validate(resp=Response(HTTP_404=(WebError, "Genre not found"),
                              HTTP_200=(GenresSchema, 'Successful operation')), tags=["Genres_request"])
 def get_genre(genre_id, db: Session = Session()):
+    """
+        Find one genre by id
+
+        Return one genre by id
+    """
     genre = db.query(Genres).get(genre_id)
     if not genre:
         abort(make_response(WebError(error_code=404, msg="Genre not found").dict(), 404))
@@ -73,6 +93,11 @@ def get_genre(genre_id, db: Session = Session()):
                              HTTP_200=(GenresSchema, 'Successful operation')),
                tags=["Genres_request"])
 def create_genre(db: Session = Session()):
+    """
+        Add new genre
+
+        Return new genre
+    """
     if not request:
         abort(make_response(WebError(error_code=400, msg="Request data error").dict(), 400))
     try:
@@ -94,6 +119,11 @@ def create_genre(db: Session = Session()):
                              HTTP_200=(GenresSchema, 'Successful operation')),
                tags=["Genres_request"])
 def update_genre(genre_id, db: Session = Session()):
+    """
+        Update genre
+
+        Return updated genre
+    """
     if not request:
         abort(make_response(WebError(error_code=400, msg="Request data error").dict(), 400))
     try:
@@ -117,6 +147,11 @@ def update_genre(genre_id, db: Session = Session()):
                              HTTP_200=(GenresSchema, 'Successful operation')),
                tags=["Genres_request"])
 def delete_genre(genre_id, db: Session = Session()):
+    """
+        Delete genre
+
+        Return delete message
+    """
     genre = db.query(Genres).get(genre_id)
     if not genre:
         abort(make_response(WebError(error_code=404, msg="Genre not found").dict(), 404))

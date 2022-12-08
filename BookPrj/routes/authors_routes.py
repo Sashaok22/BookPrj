@@ -3,7 +3,7 @@ from pydantic import ValidationError
 from spectree import Response
 from SpecTree_config import spec
 from alembic_BaseModels.Authors_BaseModels import AuthorsSchema, Author_content, AuthorSchema
-from alembic_BaseModels.Books_BaseModels import BooksSchema
+from alembic_BaseModels.Books_BaseModels import BookSchema
 from alembic_BaseModels.Genres_BaseModels import GenresSchema
 from alembic_BaseModels.Others_BaseModels import WebError
 from models.Authors import Authors
@@ -19,7 +19,9 @@ authors_blueprint = Blueprint(__name__.split(".")[-1], __name__)
                              HTTP_200=(AuthorsSchema, 'Successful operation')), tags=["Authors_request"])
 def get_authors(db: Session = Session()):
     """
-        Get all authors.
+        Get all authors
+
+        Return all authors with all their books and genres
     """
     authors = db.query(Authors).all()
     if not authors:
@@ -28,12 +30,12 @@ def get_authors(db: Session = Session()):
     for a in authors:
         _author = Author_content.from_orm(a)
         genres = db.query(Genres).join(Books.Books_Authors).join(Books.Books_Genres).all()
-        _author.genres = [GenresSchema(**g.to_dict()) for g in genres]
+        _author.genres = [GenresSchema.from_orm(g) for g in genres]
         books = a.book
-        _author.books = [BooksSchema(**b.to_dict()) for b in books]
+        _author.books = [BookSchema.from_orm(b) for b in books]
         all_authors.append(_author)
     response = AuthorsSchema()
-    response.Authors = all_authors
+    response.authors = all_authors
     return response
 
 
@@ -42,7 +44,9 @@ def get_authors(db: Session = Session()):
                              HTTP_200=(Author_content, 'Successful operation')), tags=["Authors_request"])
 def get_author(author_id, db: Session = Session()):
     """
-        Find author by id.
+        Find author by id
+
+        Return one author by id with all his books and genres
     """
     author = db.query(Authors).get(author_id)
     if author is None:
@@ -51,7 +55,7 @@ def get_author(author_id, db: Session = Session()):
     genres = db.query(Genres).join(Books.Books_Authors).join(Books.Books_Genres).all()
     _author.genres = [GenresSchema.from_orm(g) for g in genres]
     books = author.book
-    _author.books = [BooksSchema.from_orm(b) for b in books]
+    _author.books = [BookSchema.from_orm(b) for b in books]
     return _author
 
 
@@ -62,7 +66,9 @@ def get_author(author_id, db: Session = Session()):
                tags=["Authors_request"])
 def create_author(db: Session = Session()):
     """
-        Add new author.
+        Add new author
+
+        Return new author
     """
     if request.json is None:
         abort(make_response(WebError(error_code=400, msg="Request data error").dict(), 400))
@@ -87,6 +93,8 @@ def create_author(db: Session = Session()):
 def update_author(author_id, db: Session = Session()):
     """
         Update an existing author
+
+        Return updated author
     """
     if request is None:
         abort(make_response(WebError(error_code=400, msg="Request data error").dict(), 400))
@@ -114,7 +122,9 @@ def update_author(author_id, db: Session = Session()):
                              HTTP_200=(WebError, "Successful operation")), tags=["Authors_request"])
 def delete_author(author_id, db: Session = Session()):
     """
-        Delete Author
+        Delete Author with all his books
+
+        Return delete message
     """
     author = db.query(Authors).get(author_id)
     if author is None:
