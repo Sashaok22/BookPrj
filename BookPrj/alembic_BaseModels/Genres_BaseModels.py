@@ -3,9 +3,9 @@ from pydantic import BaseModel, Field
 
 
 class GenresSchema(BaseModel):
-    id: Optional[int]
-    genre_name: str = Field(..., min_length=2)
-    short_description: str = Field(..., min_length=2)
+    _id: Optional[int] = Field(description="Genre id field")
+    genre_name: str = Field(..., min_length=2, description="Genre name field")
+    short_description: str = Field(..., min_length=2, description="Genre short description field")
 
     class Config:
         orm_mode = True

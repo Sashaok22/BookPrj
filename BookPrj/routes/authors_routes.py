@@ -1,4 +1,4 @@
-from flask import request, Blueprint
+from flask import request, Blueprint, abort, make_response
 from pydantic import ValidationError
 from spectree import Response
 from SpecTree_config import spec
@@ -15,20 +15,18 @@ authors_blueprint = Blueprint(__name__.split(".")[-1], __name__)
 
 
 @authors_blueprint.get("/api/authors")
-@spec.validate(resp=Response(HTTP_404=(WebError, "Author not found"),
+@spec.validate(resp=Response(HTTP_404=(WebError, "Authors not found"),
                              HTTP_200=(AuthorsSchema, 'Successful operation')), tags=["Authors_request"])
 def get_authors(db: Session = Session()):
     """
         Get all authors.
     """
-    authors = db.query(Authors) \
-        .join(Books.Books_Authors) \
-        .join(Books.Books_Genres).all()
+    authors = db.query(Authors).all()
     if not authors:
-        return WebError(**{'error_code': 404, 'msg': "Authors not found"})
+        abort(make_response(WebError(error_code=404, msg="Authors not found").dict(), 404))
     all_authors = []
     for a in authors:
-        _author = Author_content(**a.to_dict())
+        _author = Author_content.from_orm(a)
         genres = db.query(Genres).join(Books.Books_Authors).join(Books.Books_Genres).all()
         _author.genres = [GenresSchema(**g.to_dict()) for g in genres]
         books = a.book
@@ -46,23 +44,20 @@ def get_author(author_id, db: Session = Session()):
     """
         Find author by id.
     """
-    author = db.query(Authors) \
-        .join(Books.Books_Authors) \
-        .join(Books.Books_Genres) \
-        .filter(Authors.id == author_id).all()
-    if not author:
-        return WebError(**{'error_code': 404, 'msg': "Author not found"})
-    _author = Author_content(**author[0].to_dict())
+    author = db.query(Authors).get(author_id)
+    if author is None:
+        abort(make_response(WebError(error_code=404, msg="Author not found").dict(), 404))
+    _author = Author_content.from_orm(author)
     genres = db.query(Genres).join(Books.Books_Authors).join(Books.Books_Genres).all()
-    _author.genres = [GenresSchema(**g.to_dict()) for g in genres]
-    books = author[0].book
-    _author.books = [BooksSchema(**b.to_dict()) for b in books]
+    _author.genres = [GenresSchema.from_orm(g) for g in genres]
+    books = author.book
+    _author.books = [BooksSchema.from_orm(b) for b in books]
     return _author
 
 
 @authors_blueprint.post("/api/authors")
 @spec.validate(json=AuthorSchema,
-               resp=Response(HTTP_400=(WebError, "Invalid author data"),
+               resp=Response(HTTP_400=(WebError, "Request data error"),
                              HTTP_200=(AuthorSchema, 'Successful operation')),
                tags=["Authors_request"])
 def create_author(db: Session = Session()):
@@ -70,7 +65,7 @@ def create_author(db: Session = Session()):
         Add new author.
     """
     if request.json is None:
-        return WebError(**{'error_code': 400, 'msg': "Invalid author data"})
+        abort(make_response(WebError(error_code=400, msg="Request data error").dict(), 400))
     try:
         author = AuthorSchema(**request.json)
     except ValidationError as e:
@@ -79,12 +74,13 @@ def create_author(db: Session = Session()):
     db.add(_author)
     db.commit()
     db.refresh(_author)
+    author = AuthorSchema.from_orm(_author)
     return author
 
 
 @authors_blueprint.put("/api/authors/<int:author_id>")
 @spec.validate(json=AuthorSchema,
-               resp=Response(HTTP_400=(WebError, "Invalid author data"),
+               resp=Response(HTTP_400=(WebError, "Request data error"),
                              HTTP_404=(WebError, "Author not found"),
                              HTTP_200=(AuthorSchema, 'Successful operation')),
                tags=["Authors_request"])
@@ -93,32 +89,37 @@ def update_author(author_id, db: Session = Session()):
         Update an existing author
     """
     if request is None:
-        return WebError(**{'error_code': 400, 'msg': "Invalid author data"})
+        abort(make_response(WebError(error_code=400, msg="Request data error").dict(), 400))
     try:
         author = AuthorSchema(**request.json)
     except ValidationError as e:
         return "Exception" + e.json()
     _author = db.query(Authors).get(author_id)
-    if author is None:
-        return WebError(**{'error_code': 404, 'msg': "Author not found"})
-    _author = Authors(**author.dict())
+    if _author is None:
+        abort(make_response(WebError(error_code=404, msg="Author not found").dict(), 404))
+    _author.author_name = author.author_name
+    _author.author_surname = author.author_surname
+    _author.author_patronymic = author.author_patronymic
+    _author.date_of_birth = author.date_of_birth
+    _author.date_of_death = author.date_of_death
     db.add(_author)
     db.commit()
     db.refresh(_author)
+    author = AuthorSchema.from_orm(_author)
     return author
 
 
 @authors_blueprint.delete("/api/authors/<int:author_id>")
-@spec.validate(json=AuthorSchema,
-               resp=Response(HTTP_404=(WebError, "Author not found"),
-                             HTTP_200=(WebError, 'Successful operation')), tags=["Authors_request"])
+@spec.validate(resp=Response(HTTP_404=(WebError, "Author not found"),
+                             HTTP_200=(WebError, "Successful operation")), tags=["Authors_request"])
 def delete_author(author_id, db: Session = Session()):
     """
         Delete Author
     """
     author = db.query(Authors).get(author_id)
     if author is None:
-        return WebError(**{'error_code': 404, 'msg': "Author not found"})
+        abort(make_response(WebError(error_code=404, msg="Author not found").dict(), 404))
     db.delete(author)
     db.commit()
-    return WebError(**{'error_code': 200, 'msg': "Author successful deleted"})
+    abort(make_response(WebError(error_code=200, msg="Author deleted").dict(), 200))
+    pass
