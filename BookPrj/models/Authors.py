@@ -14,9 +14,9 @@ class Authors(Base):
 
     # Table attributes
     id = Column(Integer, primary_key=True)
-    author_name = Column(String, nullable=False)
-    author_surname = Column(String, nullable=False)
-    author_patronymic = Column(String, nullable=True)
+    author_name = Column(String(50), nullable=False)
+    author_surname = Column(String(50), nullable=False)
+    author_patronymic = Column(String(50), nullable=True)
     date_of_birth = Column(Date, nullable=False)
     date_of_death = Column(Date, nullable=True)
 

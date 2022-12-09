@@ -2,9 +2,10 @@ from datetime import datetime, date
 from typing import Optional
 from pydantic import BaseModel, Field, root_validator
 
-from alembic_BaseModels.Genres_BaseModels import GenresSchema
+from alembic_BaseModels.Genres_BaseModels import GenreSchema
 
 
+# Authors BaseModel, needed to validate the data of the added author
 class AuthorSchema(BaseModel):
     _id: Optional[int] = Field(description="Author id field")
     author_name: str = Field(..., min_length=2, description="Author name field")
@@ -25,11 +26,18 @@ class AuthorSchema(BaseModel):
         orm_mode = True
 
 
+# Authors BaseModel, required for validate the data of its associated books and genres
 class Author_content(AuthorSchema):
     from alembic_BaseModels.Books_BaseModels import BookSchema
-    genres: Optional[list[GenresSchema]] = Field(description="List of genres in which the author writes field")
+    genres: Optional[list[GenreSchema]] = Field(description="List of genres in which the author writes field")
     books: Optional[list[BookSchema]] = Field(description="List of books by this author field")
 
 
+# Authors BaseModel, required for validation and submission of the list of authors
 class AuthorsSchema(BaseModel):
-    authors: Optional[list[Author_content]] = Field(description="List of models of authors")
+    authors: Optional[list[Author_content]] or Optional[list[AuthorSchema]] \
+        = Field(description="List of models of authors")
+
+    class Config:
+        orm_mode = True
+
