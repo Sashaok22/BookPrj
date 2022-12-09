@@ -4,7 +4,7 @@ from spectree import Response
 from SpecTree_config import spec
 from alembic_BaseModels.Authors_BaseModels import AuthorSchema
 from alembic_BaseModels.Books_BaseModels import BooksSchema, Book_content, BookSchema, Book_content_id
-from alembic_BaseModels.Genres_BaseModels import GenresSchema
+from alembic_BaseModels.Genres_BaseModels import GenreSchema
 from alembic_BaseModels.Others_BaseModels import WebError
 from models.Authors import Authors
 from models.Books import Books
@@ -35,9 +35,9 @@ def get_books(db: Session = Session()):
     for b in _book:
         book = Book_content.from_orm(b)
         genres = b.Books_Genres
-        book.genres = [GenresSchema.from_orm(g) for g in genres]
+        book.genres = [GenreSchema.from_orm(g) for g in genres]
         authors = b.Books_Authors
-        book.books = [AuthorSchema.from_orm(a) for a in authors]
+        book.authors = [AuthorSchema.from_orm(a) for a in authors]
         all_books.append(book)
     response = BooksSchema()
     response.books = all_books
@@ -58,9 +58,9 @@ def get_book(book_id, db: Session = Session()):
         abort(make_response(WebError(error_code=404, msg="Books not found").dict(), 404))
     _book = Book_content.from_orm(book)
     genres = book.Books_Genres
-    _book.genres = [GenresSchema.from_orm(g) for g in genres]
+    _book.genres = [GenreSchema.from_orm(g) for g in genres]
     authors = book.Books_Authors
-    _book.books = [AuthorSchema.from_orm(a) for a in authors]
+    _book.authors = [AuthorSchema.from_orm(a) for a in authors]
     return _book
 
 

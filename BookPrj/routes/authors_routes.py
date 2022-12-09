@@ -4,7 +4,7 @@ from spectree import Response
 from SpecTree_config import spec
 from alembic_BaseModels.Authors_BaseModels import AuthorsSchema, Author_content, AuthorSchema
 from alembic_BaseModels.Books_BaseModels import BookSchema
-from alembic_BaseModels.Genres_BaseModels import GenresSchema
+from alembic_BaseModels.Genres_BaseModels import GenreSchema
 from alembic_BaseModels.Others_BaseModels import WebError
 from models.Authors import Authors
 from models.Books import Books
@@ -30,7 +30,7 @@ def get_authors(db: Session = Session()):
     for a in authors:
         _author = Author_content.from_orm(a)
         genres = db.query(Genres).join(Books.Books_Authors).join(Books.Books_Genres).all()
-        _author.genres = [GenresSchema.from_orm(g) for g in genres]
+        _author.genres = [GenreSchema.from_orm(g) for g in genres]
         books = a.book
         _author.books = [BookSchema.from_orm(b) for b in books]
         all_authors.append(_author)
@@ -53,7 +53,7 @@ def get_author(author_id, db: Session = Session()):
         abort(make_response(WebError(error_code=404, msg="Author not found").dict(), 404))
     _author = Author_content.from_orm(author)
     genres = db.query(Genres).join(Books.Books_Authors).join(Books.Books_Genres).all()
-    _author.genres = [GenresSchema.from_orm(g) for g in genres]
+    _author.genres = [GenreSchema.from_orm(g) for g in genres]
     books = author.book
     _author.books = [BookSchema.from_orm(b) for b in books]
     return _author
@@ -70,7 +70,7 @@ def create_author(db: Session = Session()):
 
         Return new author
     """
-    if request.json is None:
+    if request is None:
         abort(make_response(WebError(error_code=400, msg="Request data error").dict(), 400))
     try:
         author = AuthorSchema(**request.json)

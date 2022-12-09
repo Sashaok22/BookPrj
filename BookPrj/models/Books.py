@@ -8,7 +8,7 @@ class Books(Base):
 
     # Table attributes
     id = Column(Integer, primary_key=True)
-    book_name = Column(String, nullable=False)
+    book_name = Column(String(50), nullable=False)
     number_of_pages = Column(Integer, nullable=False)
     rating = Column(Integer, nullable=False)
 

@@ -15,8 +15,8 @@ class Genres(Base):
 
     # Table attributes
     id = Column(Integer, primary_key=True)
-    genre_name = Column(String, nullable=False, unique=True)
-    short_description = Column(String, nullable=False)
+    genre_name = Column(String(50), nullable=False)
+    short_description = Column(String(100), nullable=False)
     book = relationship('Books', secondary=books_genres, backref="Books_Genres")
 
     def to_dict(self):
