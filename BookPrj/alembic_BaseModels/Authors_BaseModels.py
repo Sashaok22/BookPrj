@@ -8,9 +8,9 @@ from alembic_BaseModels.Genres_BaseModels import GenreSchema
 # Authors BaseModel, needed to validate the data of the added author
 class AuthorSchema(BaseModel):
     _id: Optional[int] = Field(description="Author id field")
-    author_name: str = Field(..., min_length=2, description="Author name field")
-    author_surname: str = Field(..., min_length=2, description="Author surname field")
-    author_patronymic: Optional[str] = Field(min_length=2, description="Author patronymic field")
+    author_name: str = Field(..., min_length=2, max_length=50, description="Author name field")
+    author_surname: str = Field(..., min_length=2, max_length=50, description="Author surname field")
+    author_patronymic: Optional[str] = Field(min_length=2, max_length=50, description="Author patronymic field")
     date_of_birth: date = Field(..., description="Author date of birth field")
     date_of_death: Optional[date] = Field(description="Author date of death field")
 

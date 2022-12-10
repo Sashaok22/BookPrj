@@ -1,9 +1,9 @@
-from flask import request, jsonify, abort, Blueprint, make_response
+from flask import request, abort, Blueprint, make_response
 from pydantic import ValidationError
 from spectree import Response
 from SpecTree_config import spec
-from alembic_BaseModels.Authors_BaseModels import AuthorSchema, AuthorsSchema
-from alembic_BaseModels.Books_BaseModels import BookSchema, BooksSchema
+from alembic_BaseModels.Authors_BaseModels import AuthorsSchema
+from alembic_BaseModels.Books_BaseModels import BooksSchema
 from alembic_BaseModels.Genres_BaseModels import GenreSchema, GenresSchema
 from alembic_BaseModels.Others_BaseModels import WebError
 from models.Authors import Authors

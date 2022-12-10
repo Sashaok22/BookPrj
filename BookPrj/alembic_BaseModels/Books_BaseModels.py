@@ -7,7 +7,7 @@ from alembic_BaseModels.Genres_BaseModels import GenreSchema
 # Books BaseModel, required for validate the data of the added book
 class BookSchema(BaseModel):
     _id: Optional[int]
-    book_name: str = Field(..., min_length=2, description='Book name field')
+    book_name: str = Field(..., min_length=2, max_length=50, description='Book name field')
     number_of_pages: int = Field(..., gt=0, description='Number of pages field')
     rating: int = Field(..., gt=0, lt=11, description='Personal rating of books fields')
 

@@ -5,8 +5,8 @@ from pydantic import BaseModel, Field
 # Genres BaseModel, required for validate the data of the added genre
 class GenreSchema(BaseModel):
     _id: Optional[int] = Field(description="Genre id field")
-    genre_name: str = Field(..., min_length=2, description="Genre name field")
-    short_description: str = Field(..., min_length=2, description="Genre short description field")
+    genre_name: str = Field(..., min_length=2, max_length=50, description="Genre name field")
+    short_description: str = Field(..., min_length=2, max_length=50, description="Genre short description field")
 
     class Config:
         orm_mode = True
