@@ -14,7 +14,7 @@ git clone https://github.com/Sashaok22/BookPrj.git
 
 Next, use pip to install all dependencies.
 
-```pypi
+```
 pip install -r requirements.txt
 ```
 
