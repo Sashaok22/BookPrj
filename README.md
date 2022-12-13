@@ -31,6 +31,8 @@ Next, use **pip** to install all dependencies:
 pip install -r requirements.txt
 ```
 
+Launch project via **main.py**
+
 ____
 
 ## Documentation
