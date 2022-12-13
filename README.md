@@ -33,6 +33,10 @@ pip install -r requirements.txt
 
 Launch project via **main.py**
 
+```
+python BookPrj\main.py
+```
+
 ____
 
 ## Documentation
