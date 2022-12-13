@@ -9,6 +9,14 @@ ____
 Python version used for the project - **Python 3.10.5**
 ____
 
+## DataBase
+
+**Project database** - [PostgreSQL](https://www.postgresql.org/)
+
+**DataBase config path** - models/database.py
+
+____
+
 ## Installation
 
 Install the current version of project with [Git](https://git-scm.com/):
@@ -28,9 +36,3 @@ ____
 ## Documentation
 
 **Documentation** @localhost/apidoc/swagger/
-
-____
-
-## DataBase
-
-**DB config path** - models/database.py
