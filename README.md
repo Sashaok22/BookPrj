@@ -8,17 +8,15 @@ ____
 
 Install the current version of project with [Git](https://git-scm.com/):
 
-'''
-
+```
 git clone https://github.com/Sashaok22/BookPrj.git
-
-'''
+```
 
 Next, use pip to install all dependencies.
 
-'''
+```
 pip install -r requirements.txt
-'''
+```
 
 ____
 
